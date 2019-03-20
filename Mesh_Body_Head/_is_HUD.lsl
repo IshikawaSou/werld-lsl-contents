@@ -1,12 +1,15 @@
 /*
-    --- [BMS] Hair HUD Scripts ---
+    --- [BMS] MESH Body HUD Scripts ---
     
-                                Esforco July.10 / 2018
+                                Ishikawa Sou March 20 / 2019
                                 
 */
 
-integer product_id = 000;
+string product_id = "BMS_MESH_BODY";
 integer channel = 0;
+integer listen_handle;
+list body_parts_list;
+list body_info_list;
 
 //string url_twitter = "https://twitter.com/Blossom_Adamski";
 //string url_flicker = "https://www.flickr.com/photos/158701349@N08/";
@@ -210,7 +213,7 @@ integer genCh()
     integer gen;
     key id = llGetOwner();
     string str = llGetSubString((string)id,0,3);
-    gen = -1-(integer)("0x"+str);
+    gen = -1-(integer)("0x"+str) + (integer)product_id;
     if(gen<0) gen*=-1;
     return gen;
 }
@@ -221,6 +224,34 @@ string strReplace(string str, string search, string replace)
     return llDumpList2String(llParseStringKeepNulls(str, [search], []), replace);
 }
 
+update_btn_enable()
+{
+    integer i = 2;
+    list cmd;
+    integer start_index;
+    integer face = 4;
+    vector color = <1.0,0.8,0.8>;
+    for(i = 2 ; i < llGetListLength(body_parts_list) ; i++)
+    {
+        string parts_name = "_" + llList2String(body_parts_list,i);
+        integer btn_index = getIndex(parts_name);
+        integer trans = llList2Integer(body_info_list,i);
+
+        if(i == 2)
+        {
+            start_index = btn_index;
+            cmd = [ PRIM_COLOR, face, color, trans ];
+        }
+        else
+        {
+            cmd += [ PRIM_LINK_TARGET,  btn_index];
+            cmd += [ PRIM_COLOR, face, color, trans ];
+        }
+    }
+    
+    llSetLinkPrimitiveParams(start_index, cmd);
+}
+
 default
 {
     state_entry()
@@ -228,6 +259,7 @@ default
         title_name = llGetObjectName();
         
         channel = genCh();
+        listen_handle = llListen(channel+1, "", NULL_KEY, ""); // Body からの受信
         
         root_pos = llList2Vector(llGetLinkPrimitiveParams(0,[PRIM_POS_LOCAL]),0);
         root_pos.x += 0.1;
@@ -348,5 +380,21 @@ default
             move_flag = FALSE;
         }
         
+    }
+    
+    listen( integer channel, string name, key user, string message )
+    {
+        if(llGetOwnerKey(user) != llGetOwner()) return;
+        
+        list cmd = llCSV2List(message);
+        if(llList2String(cmd,0) == "parts")
+        {
+            body_parts_list = cmd;
+        }
+        else if(llList2String(cmd,0) == "info")
+        {
+            body_info_list = cmd;
+            update_btn_enable();
+        }
     }
 }
