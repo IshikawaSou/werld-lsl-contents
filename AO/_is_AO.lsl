@@ -33,6 +33,11 @@ float gap = 1.0;
 integer anim_change_cnt = 0;
 integer ANIM_CHANGE = 8;
 
+integer process_flag = TRUE;
+list prim_list = [];
+key on_tex = "f9eadc40-90c7-40db-8fee-a5cd9fcc1651";
+key off_tex = "3d8e68ce-4f76-4049-a68f-3547dc99926b";
+
 // Random
 integer random_integer( integer min, integer max )
 {
@@ -211,6 +216,46 @@ stopAnim()
     }
 }
 
+// Prim List 作成
+createIndex()
+{
+    integer i;
+    prim_list = [];
+    
+    prim_list = [llGetObjectName()];    // ルート ( 1 : 起算 )
+    prim_list += [llGetObjectName()];
+    for(i = 2; i <= llGetNumberOfPrims() ; i++)
+    {
+        string prim_name = llGetLinkName(i);
+        prim_list += [prim_name];
+    }
+}
+
+// Prim Nmae から インデックス を返す
+integer getIndex(string prim_name)
+{
+    return llListFindList(prim_list, [prim_name]);   
+}
+
+ao_on()
+{
+    llRequestPermissions(llGetOwner(), PERMISSION_OVERRIDE_ANIMATIONS | PERMISSION_TRIGGER_ANIMATION);
+    llSetTimerEvent(gap);
+}
+
+ao_off()
+{
+    llResetAnimationOverride("ALL");
+    list anim_list = llGetAnimationList(llGetOwner());
+    integer i = 0;
+    for(i = 0 ; i < llGetListLength(anim_list) ; i++)
+    {
+        llStopAnimation(llList2String(anim_list,i));
+    }
+    
+    llSetTimerEvent(0);
+}
+
 default
 {
     state_entry()
@@ -226,6 +271,34 @@ default
         llRequestPermissions(llGetOwner(), PERMISSION_OVERRIDE_ANIMATIONS | PERMISSION_TRIGGER_ANIMATION);
         
         llSetTimerEvent(gap);
+        
+        createIndex();
+    }
+    
+    touch_start(integer n)
+    {
+        string btn_name = llGetLinkName(llDetectedLinkNumber(0));
+        if(btn_name == "switch")
+        {
+            if(process_flag == TRUE)
+            {
+                ao_off();
+                process_flag = FALSE;
+                llSetLinkPrimitiveParams(getIndex(btn_name),
+                    [
+                        PRIM_TEXTURE, 4, off_tex, <.5,1,0>, ZERO_VECTOR, 0
+                    ]);
+            }
+            else
+            {
+                ao_on();
+                process_flag = TRUE;
+                llSetLinkPrimitiveParams(getIndex(btn_name),
+                    [
+                        PRIM_TEXTURE, 4, on_tex, <.5,1,0>, ZERO_VECTOR, 0
+                    ]);
+            }
+        }
     }
     
     attach(key id)
@@ -234,20 +307,11 @@ default
  
         if (id)
         {
-            llRequestPermissions(id, PERMISSION_OVERRIDE_ANIMATIONS | PERMISSION_TRIGGER_ANIMATION);
-            llSetTimerEvent(gap);
+            ao_on();
         }
         else if (perm & PERMISSION_OVERRIDE_ANIMATIONS)
         {
-            llResetAnimationOverride("ALL");
-            list anim_list = llGetAnimationList(llGetOwner());
-            integer i = 0;
-            for(i = 0 ; i < llGetListLength(anim_list) ; i++)
-            {
-                llStopAnimation(llList2String(anim_list,i));
-            }
-            
-            llSetTimerEvent(0);
+            ao_off();
         }
     }
  
@@ -397,7 +461,6 @@ default
             anim_change_cnt = 0;
         }
 
-        
         if(info & AGENT_TYPING)
         {
             startAnim(current_Typing);
