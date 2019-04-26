@@ -9,8 +9,8 @@ string current_select = "OFF";
 integer link_num = 0;
 integer face_num = 4;
 
-key off_tex = "82a27ed2-f4e0-4ce2-adee-f4c1dc131b83";
-key ready_tex = "d3dc9ebe-5580-4a2d-9a8b-9067365cc98d";
+key off_tex = "3cd32f04-6bc3-b241-24d6-d06b1c6acaaa";
+key ready_tex = "e9731c1a-474a-e605-79dc-92f341889372";
 
 // 文字列置換
 string strReplace(string str, string search, string replace)
