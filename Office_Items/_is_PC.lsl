@@ -7,11 +7,10 @@ string check_1_str = "🗸 ";
 string current_select = "OFF";
 
 integer link_num = 0;
-integer face_num = 2;
+integer face_num = 4;
 
-key off_tex = "f718d636-a8db-479d-8f5b-ab6d8effd9e5";
-key ready_tex = "";
-//key ready_tex = "37808013-b0c4-4a89-8966-f4bab97510da";
+key off_tex = "82a27ed2-f4e0-4ce2-adee-f4c1dc131b83";
+key ready_tex = "d3dc9ebe-5580-4a2d-9a8b-9067365cc98d";
 
 // 文字列置換
 string strReplace(string str, string search, string replace)
@@ -125,7 +124,7 @@ default
             
             llSetLinkPrimitiveParams( link_num,
                 [
-                    PRIM_TEXTURE, face_num, off_tex, <-1,1,0>, ZERO_VECTOR, 180*DEG_TO_RAD,
+                    PRIM_TEXTURE, face_num, off_tex, <1,1,0>, ZERO_VECTOR, 0,
                     PRIM_FULLBRIGHT, face_num, FALSE
                 ]);
 
@@ -134,7 +133,7 @@ default
         {
             llSetLinkPrimitiveParams( link_num,
                 [
-                    PRIM_TEXTURE, face_num, ready_tex, <-1,1,0>, ZERO_VECTOR, 180*DEG_TO_RAD,
+                    PRIM_TEXTURE, face_num, ready_tex, <1,1,0>, ZERO_VECTOR, 0,
                     PRIM_COLOR, face_num, <1,1,1>, 1.0,
                     PRIM_FULLBRIGHT, face_num, TRUE
                 ]);
