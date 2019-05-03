@@ -1,4 +1,6 @@
 /*
+ * [AV]helper - Setup aid, to move poses by moving an object
+ *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -28,10 +30,11 @@ vector default_size = <0.12,0.12,3.5>;
 key key_request;
 vector my_pos;
 rotation my_rot;
+list A = []; // Force error in LSO //OSS::
 
 stop_all_anims()
 {
-    if (llAvatarOnSitTarget() != NULL_KEY)
+    if (llAvatarOnSitTarget()) // OSS::if (llAvatarOnSitTarget() != NULL_KEY)
     {
         if (llGetPermissions() & PERMISSION_TRIGGER_ANIMATION)
         {
@@ -68,7 +71,8 @@ set_text()
 setup()
 {
     alpha = llList2Float(llGetPrimitiveParams([PRIM_COLOR, 0]), 1);
-    CURRENT_AV = "";
+    CURRENT_AV = llList2Key(A, 0); //OSS::CURRENT_AV = "";
+    A = []; //OSS::
     vector size = default_size;
     if (llGetCreator() != llGetInventoryCreator(llGetScriptName()))
     {
@@ -83,7 +87,7 @@ setup()
     llSetObjectName(base_object_name + " " + (string)helper_index);
     if (llGetCreator() == llGetInventoryCreator(llGetScriptName()))
     {
-        llSetLinkPrimitiveParamsFast(LINK_THIS, [PRIM_TYPE, PRIM_TYPE_BOX, PRIM_HOLE_DEFAULT, <0,1,0>, 0, ZERO_VECTOR, <1,1,0>, ZERO_VECTOR, PRIM_TEXTURE, ALL_SIDES, "5748decc-f629-461c-9a36-a35a221fe21f", <1,1,0>, ZERO_VECTOR, 0, PRIM_COLOR, ALL_SIDES, llList2Vector(colors, helper_index % llGetListLength(colors)), alpha, PRIM_COLOR, 1, <1,1,1>, alpha, PRIM_COLOR, 3, <1,1,1>, alpha, PRIM_SIZE, size]);
+        llSetLinkPrimitiveParamsFast(LINK_THIS, [PRIM_TYPE, PRIM_TYPE_BOX, PRIM_HOLE_DEFAULT, <0,1,0>, 0, ZERO_VECTOR, <1,1,0>, ZERO_VECTOR, PRIM_TEXTURE, ALL_SIDES, TEXTURE_BLANK, <1,1,0>, ZERO_VECTOR, 0, PRIM_COLOR, ALL_SIDES, llList2Vector(colors, helper_index % llGetListLength(colors)), alpha, PRIM_COLOR, 1, <1,1,1>, alpha, PRIM_COLOR, 3, <1,1,1>, alpha, PRIM_SIZE, size]);
     }
     else
     {
@@ -96,15 +100,17 @@ default
 {
     state_entry()
     {
+        A = [CURRENT_AV];
+        
         llSetText("", <1,1,1>, 1);
         llSetObjectName(base_object_name);
         if (llGetCreator() == llGetInventoryCreator(llGetScriptName()))
         {
-            llSetLinkPrimitiveParamsFast(LINK_THIS, [PRIM_TEXTURE, ALL_SIDES, "5748decc-f629-461c-9a36-a35a221fe21f", <1,1,0>, <0,0,0>, 0, PRIM_FULLBRIGHT, ALL_SIDES, TRUE, PRIM_COLOR, ALL_SIDES, llList2Vector(colors, 0), 0.7, PRIM_GLOW, ALL_SIDES, 0.]);
+            llSetLinkPrimitiveParamsFast(LINK_THIS, [PRIM_TEXTURE, ALL_SIDES, TEXTURE_BLANK, <1,1,0>, <0,0,0>, 0, PRIM_FULLBRIGHT, ALL_SIDES, TRUE, PRIM_COLOR, ALL_SIDES, llList2Vector(colors, 0), 0.7, PRIM_GLOW, ALL_SIDES, 0.]);
         }
         else
         {
-            llSetLinkPrimitiveParamsFast(LINK_THIS, [PRIM_TEXTURE, ALL_SIDES, "5748decc-f629-461c-9a36-a35a221fe21f", <1,1,0>, <0,0,0>, 0, PRIM_FULLBRIGHT, ALL_SIDES, TRUE]);
+            llSetLinkPrimitiveParamsFast(LINK_THIS, [PRIM_TEXTURE, ALL_SIDES, TEXTURE_BLANK, <1,1,0>, <0,0,0>, 0, PRIM_FULLBRIGHT, ALL_SIDES, TRUE]);
         }
         integer everyonePerms = llGetObjectPermMask(MASK_EVERYONE);
         if ((everyonePerms & PERM_MOVE) == 0 && llGetOwner() == llGetInventoryCreator(llGetScriptName()))
@@ -148,7 +154,7 @@ default
         if (chan == 5 && id == CURRENT_AV)
         {
             key av = (key)msg;
-            if (osIsUUID(av) && av != NULL_KEY)
+            if (av) // OSS::if (osIsUUID(av) && av != NULL_KEY)
             {
                 if (llGetAgentSize(av) != ZERO_VECTOR)
                 {
@@ -175,7 +181,7 @@ default
             {
                 if (OLD_HELPER_METHOD)
                 {
-                    if (llAvatarOnSitTarget() != NULL_KEY)
+                    if (llAvatarOnSitTarget()) // OSS::if (llAvatarOnSitTarget() != NULL_KEY)
                     {
                         stop_all_anims();
                         llRegionSay(comm_channel, "GETUP");
@@ -244,7 +250,7 @@ default
             key av = llAvatarOnSitTarget();
             if (OLD_HELPER_METHOD)
             {
-                if (osIsUUID(av) && av != NULL_KEY)
+                if (av) // OSS::if (osIsUUID(av) && av != NULL_KEY)
                 {
                     llRequestPermissions(av, PERMISSION_TRIGGER_ANIMATION);
                     llRegionSay(comm_channel, "ANIMA|" + (string)av);
@@ -256,7 +262,7 @@ default
                     CURRENT_AV = "";
                 }
             }
-            if (osIsUUID(av) && av != NULL_KEY)
+            else if (av) // OSS::if (osIsUUID(av) && av != NULL_KEY)
             {
                 llUnSit(av);
                 llDialog(av, product + " " + version + "\n\nDo not sit on the helper with AVsitter2 unless you have enabled the old helper mode. Move the helper while sitting on the furniture. Please see instructions at http://avsitter.com", ["OK"], -68154283);
